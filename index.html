@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T.H.B.B fullscreen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f1f1;
+      color: #333;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Header */
+    header {
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 600;
+      color: #4285F4; /* Google blue */
+    }
+
+    .nav-items {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-items a {
+      color: #2009f3;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: color 0.3s ease;
+    }
+
+    .nav-items a:hover {
+      color: #4285F4; /* Hover effect with Google blue */
+    }
+
+    /* Tabs Section */
+    .tabs {
+      margin-top: 60px; /* Offset from header */
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      background-color: #f5e6a2;
+      border: 1px solid #f5e6a2;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .tab:hover {
+      background-color: #4285F4;
+      color: #fff;
+    }
+
+    .active-tab {
+      background-color: #4285F4;
+      color: #fff;
+      border: none;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #f5e6a2;
+      padding: 15px;
+      text-align: center;
+      color: #666;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">T.H.B.B fullscreen</div>
+    <nav class="nav-items">
+      <a href="#">Home</a>
+    </nav>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active-tab" data-url="https://www.google.com" onclick="changeTab(this)">Google</div>
+    <div class="tab" data-url="https://www.wikipedia.org" onclick="changeTab(this)">Wikipedia</div>
+    <div class="tab" data-url="https://www.youtube.com" onclick="changeTab(this)">YouTube</div>
+    <div class="tab" data-url="https://www.crunchyroll.com" onclick="changeTab(this)">Crunchyroll</div>
+    <div class="tab" data-url="https://www.tailscale.com" onclick="changeTab(this)">Tailscale</div>
+    <div class="tab" data-url="https://use.silksky.com" onclick="changeTab(this)">interstellar</div>
+    <div class="tab" data-url="https://spotidownloader.com" onclick="changeTab(this)">Spotify downloader</div>
+    <div class="tab" data-url="https://www.crunchyroll.com" onclick="changeTab(this)">Crunchyroll</div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 T.H.B.B fullscreen All rights reserved.</p>
+  </footer>
+
+  <script>
+    function changeTab(tabElement) {
+      // Get the URL from the data attribute
+      const url = tabElement.getAttribute('data-url');
+      
+      // Open a new tab with about:blank
+      const newTab = window.open('about:blank', '_blank');
+      
+      // Inject the iframe with the actual URL
+      newTab.document.write(`
+        <html>
+          <head>
+            <title>Loading...</title>
+          </head>
+          <body>
+            <iframe src="${url}" style="width: 100%; height: 100vh;" frameborder="0"></iframe>
+          </body>
+        </html>
+      `);
+      newTab.document.close();
+    }
+  </script>
+</body>
+</html>
