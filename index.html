@@ -1,13 +1,21 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Browser</title>
+    <!-- Add favicon -->
+    <link rel="icon" href="logo.png" type="image/png"> <!-- Adjust the path if needed -->
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-       
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f2e2a9; /* Dull yellow */
+            color: black;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         /* Tab Bar */
         #tabBar {
             display: flex;
@@ -26,7 +34,7 @@
             display: flex;
             align-items: center;
         }
-        .tab.active { background: #007bff; } /* Highlight active tab */
+        .tab.active { background: #007bff; }
         .tab button {
             margin-left: 5px;
             background: red;
@@ -49,11 +57,36 @@
             border: 1px solid #000;
             padding: 10px;
         }
+        #bookmarksList { margin-top: 10px; }
 
         /* Content Area */
         #tabContent { height: 90vh; display: flex; flex-direction: column; }
-        iframe { flex: 1; width: 100%; border: none; display: none; }
-        .hidden { display: none; }
+        iframe { flex: 1; width: 100%; border: none; }
+
+        /* Search Bar */
+        .searchBar {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        /* Start Page */
+        .startPage {
+            text-align: center;
+            padding: 20px;
+        }
+        #logo {
+            width: 50px; /* Adjust the size of the logo */
+            height: 50px;
+            margin-bottom: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            font-size: 12px;
+            color: #555;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -62,11 +95,17 @@
     <div id="tabBar">
         <button onclick="newTab()">➕ New Tab</button>
         <button onclick="toggleSettings()">⚙️ Settings</button>
+        <button onclick="bookmarkPage()">⭐ Bookmark</button>
     </div>
 
     <!-- Settings Menu -->
     <div id="settingsMenu">
         <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+        <br>
+        <input type="text" id="wallpaperURL" placeholder="Enter image URL for wallpaper">
+        <button onclick="changeWallpaper()">Set Wallpaper</button>
+        <h3>Bookmarks</h3>
+        <div id="bookmarksList"></div>
     </div>
 
     <!-- Content Area -->
@@ -81,13 +120,13 @@
             container.className = "startPage";
             container.innerHTML = `
                 <div style="text-align:center; padding: 20px;">
+                    <img id="logo" src="logo.png" alt="Logo"> <!-- Small logo on start page -->
                     <h1>Welcome to Mini Browser</h1>
-                    <input type="text" id="searchBar${tabId}" placeholder="Search DuckDuckGo..." onkeypress="search(event, ${tabId})">
+                    <input type="text" id="searchBar${tabId}" class="searchBar" placeholder="Search or Enter URL" onkeypress="search(event, ${tabId})">
                     <button onclick="search(null, ${tabId})">Search</button>
-                    <h3>Quick Links</h3>
-                    <button onclick="openURL('https://www.google.com', ${tabId})">Google</button>
-                    <button onclick="openURL('https://www.youtube.com', ${tabId})">YouTube</button>
-                    <button onclick="openURL('https://www.github.com', ${tabId})">GitHub</button>
+                    <div class="footer">
+                        T.H.B.B version 8 by pixelatedca1
+                    </div>
                 </div>
             `;
             return container;
@@ -96,18 +135,19 @@
         function newTab() {
             let tabId = tabs.length;
 
-            // Create tab button
             let tab = document.createElement("div");
             tab.className = "tab";
             tab.innerHTML = `Tab ${tabId + 1} <button onclick="closeTab(${tabId}, event)">X</button>`;
             tab.onclick = () => switchTab(tabId);
             document.getElementById("tabBar").appendChild(tab);
 
-            // Create tab content (Start Page)
             let startPage = createStartPage(tabId);
+            let iframe = document.createElement("iframe");
+            iframe.src = "about:blank";
             document.getElementById("tabContent").appendChild(startPage);
+            document.getElementById("tabContent").appendChild(iframe);
 
-            tabs.push({ tab, content: startPage });
+            tabs.push({ tab, content: startPage, iframe });
             switchTab(tabId);
         }
 
@@ -115,27 +155,18 @@
             tabs.forEach((t, index) => {
                 t.content.style.display = index === id ? "block" : "none";
                 t.tab.classList.toggle("active", index === id);
+                t.iframe.style.display = index === id ? "block" : "none";
             });
             activeTab = id;
         }
 
         function closeTab(id, event) {
-            event.stopPropagation(); // Prevent tab switch on close button click
-
+            event.stopPropagation();
             if (tabs[id]) {
                 tabs[id].tab.remove();
                 tabs[id].content.remove();
+                tabs[id].iframe.remove();
                 tabs.splice(id, 1);
-
-                // Rebuild tab IDs
-                document.getElementById("tabBar").innerHTML = `<button onclick="newTab()">➕ New Tab</button> <button onclick="toggleSettings()">⚙️ Settings</button>`;
-                tabs.forEach((t, index) => {
-                    t.tab.innerHTML = `Tab ${index + 1} <button onclick="closeTab(${index}, event)">X</button>`;
-                    t.tab.onclick = () => switchTab(index);
-                    document.getElementById("tabBar").appendChild(t.tab);
-                });
-
-                // Switch to another tab or show Start Page if no tabs remain
                 if (tabs.length > 0) {
                     switchTab(Math.max(0, id - 1));
                 } else {
@@ -147,16 +178,12 @@
         function search(event, tabId) {
             if (event && event.key !== "Enter") return;
             let query = document.getElementById(`searchBar${tabId}`).value;
-            if (query) openURL(`https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`, tabId);
+            if (query) openURL(query.startsWith('http') ? query : 'https://' + query, tabId);
         }
 
         function openURL(url, tabId) {
-            let iframe = document.createElement("iframe");
+            let iframe = tabs[tabId].iframe;
             iframe.src = url;
-
-            // Remove existing content and insert iframe
-            document.getElementById("tabContent").replaceChild(iframe, tabs[tabId].content);
-            tabs[tabId].content = iframe;
         }
 
         function toggleFullscreen() {
@@ -170,9 +197,39 @@
         function toggleSettings() {
             let menu = document.getElementById("settingsMenu");
             menu.style.display = menu.style.display === "block" ? "none" : "block";
+            loadBookmarks();
         }
 
-        // Open the first tab on load
+        function changeWallpaper() {
+            let url = document.getElementById("wallpaperURL").value;
+            if (url) {
+                document.body.style.backgroundImage = `url('${url}')`;
+            }
+        }
+
+        function bookmarkPage() {
+            if (activeTab !== null) {
+                let url = tabs[activeTab].iframe.src;
+                let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+                if (!bookmarks.includes(url)) {
+                    bookmarks.push(url);
+                    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+                    loadBookmarks();
+                }
+            }
+        }
+
+        function loadBookmarks() {
+            let bookmarksList = document.getElementById("bookmarksList");
+            bookmarksList.innerHTML = "";
+            let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+            bookmarks.forEach(url => {
+                let item = document.createElement("div");
+                item.innerHTML = `<a href="#" onclick="openURL('${url}', activeTab)">${url}</a>`;
+                bookmarksList.appendChild(item);
+            });
+        }
+
         newTab();
     </script>
 
