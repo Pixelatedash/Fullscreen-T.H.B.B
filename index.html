@@ -1,156 +1,180 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>T.H.B.B fullscreen</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    /* Global Styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Browser</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+       
+        /* Tab Bar */
+        #tabBar {
+            display: flex;
+            align-items: center;
+            background: #333;
+            padding: 5px;
+        }
+        .tab {
+            background: #555;
+            color: white;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .tab.active { background: #007bff; } /* Highlight active tab */
+        .tab button {
+            margin-left: 5px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f1f1f1;
-      color: #333;
-      overflow-x: hidden;
-    }
+        /* Buttons */
+        #controls { padding: 10px; display: flex; gap: 5px; }
+        button { padding: 5px 10px; cursor: pointer; }
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+        /* Settings Menu */
+        #settingsMenu {
+            display: none;
+            position: absolute;
+            top: 40px; right: 10px;
+            background: white;
+            border: 1px solid #000;
+            padding: 10px;
+        }
 
-    /* Header */
-    header {
-      background-color: #fff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: 600;
-      color: #4285F4; /* Google blue */
-    }
-
-    .nav-items {
-      display: flex;
-      gap: 20px;
-    }
-
-    .nav-items a {
-      color: #2009f3;
-      font-size: 16px;
-      font-weight: 600;
-      text-transform: uppercase;
-      transition: color 0.3s ease;
-    }
-
-    .nav-items a:hover {
-      color: #4285F4; /* Hover effect with Google blue */
-    }
-
-    /* Tabs Section */
-    .tabs {
-      margin-top: 60px; /* Offset from header */
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .tab {
-      padding: 10px 20px;
-      background-color: #f5e6a2;
-      border: 1px solid #f5e6a2;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .tab:hover {
-      background-color: #4285F4;
-      color: #fff;
-    }
-
-    .active-tab {
-      background-color: #4285F4;
-      color: #fff;
-      border: none;
-    }
-
-    /* Footer */
-    footer {
-      background-color: #f5e6a2;
-      padding: 15px;
-      text-align: center;
-      color: #666;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      margin-top: 40px;
-    }
-  </style>
+        /* Content Area */
+        #tabContent { height: 90vh; display: flex; flex-direction: column; }
+        iframe { flex: 1; width: 100%; border: none; display: none; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="logo">T.H.B.B fullscreen</div>
-    <nav class="nav-items">
-      <a href="#">Home</a>
-    </nav>
-  </header>
+    <!-- Tab Bar -->
+    <div id="tabBar">
+        <button onclick="newTab()">➕ New Tab</button>
+        <button onclick="toggleSettings()">⚙️ Settings</button>
+    </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active-tab" data-url="https://www.google.com" onclick="changeTab(this)">Google</div>
-    <div class="tab" data-url="https://www.wikipedia.org" onclick="changeTab(this)">Wikipedia</div>
-    <div class="tab" data-url="https://www.youtube.com" onclick="changeTab(this)">YouTube</div>
-    <div class="tab" data-url="https://www.crunchyroll.com" onclick="changeTab(this)">Crunchyroll</div>
-    <div class="tab" data-url="https://www.tailscale.com" onclick="changeTab(this)">Tailscale</div>
-    <div class="tab" data-url="https://use.silksky.com" onclick="changeTab(this)">interstellar</div>
-    <div class="tab" data-url="https://spotidownloader.com" onclick="changeTab(this)">Spotify downloader</div>
-    <div class="tab" data-url="https://www.crunchyroll.com" onclick="changeTab(this)">Crunchyroll</div>
-  </div>
+    <!-- Settings Menu -->
+    <div id="settingsMenu">
+        <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+    </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2025 T.H.B.B fullscreen All rights reserved.</p>
-  </footer>
+    <!-- Content Area -->
+    <div id="tabContent"></div>
 
-  <script>
-    function changeTab(tabElement) {
-      // Get the URL from the data attribute
-      const url = tabElement.getAttribute('data-url');
-      
-      // Open a new tab with about:blank
-      const newTab = window.open('about:blank', '_blank');
-      
-      // Inject the iframe with the actual URL
-      newTab.document.write(`
-        <html>
-          <head>
-            <title>Loading...</title>
-          </head>
-          <body>
-            <iframe src="${url}" style="width: 100%; height: 100vh;" frameborder="0"></iframe>
-          </body>
-        </html>
-      `);
-      newTab.document.close();
-    }
-  </script>
+    <script>
+        let tabs = [];
+        let activeTab = null;
+
+        function createStartPage(tabId) {
+            let container = document.createElement("div");
+            container.className = "startPage";
+            container.innerHTML = `
+                <div style="text-align:center; padding: 20px;">
+                    <h1>Welcome to Mini Browser</h1>
+                    <input type="text" id="searchBar${tabId}" placeholder="Search DuckDuckGo..." onkeypress="search(event, ${tabId})">
+                    <button onclick="search(null, ${tabId})">Search</button>
+                    <h3>Quick Links</h3>
+                    <button onclick="openURL('https://www.google.com', ${tabId})">Google</button>
+                    <button onclick="openURL('https://www.youtube.com', ${tabId})">YouTube</button>
+                    <button onclick="openURL('https://www.github.com', ${tabId})">GitHub</button>
+                </div>
+            `;
+            return container;
+        }
+
+        function newTab() {
+            let tabId = tabs.length;
+
+            // Create tab button
+            let tab = document.createElement("div");
+            tab.className = "tab";
+            tab.innerHTML = `Tab ${tabId + 1} <button onclick="closeTab(${tabId}, event)">X</button>`;
+            tab.onclick = () => switchTab(tabId);
+            document.getElementById("tabBar").appendChild(tab);
+
+            // Create tab content (Start Page)
+            let startPage = createStartPage(tabId);
+            document.getElementById("tabContent").appendChild(startPage);
+
+            tabs.push({ tab, content: startPage });
+            switchTab(tabId);
+        }
+
+        function switchTab(id) {
+            tabs.forEach((t, index) => {
+                t.content.style.display = index === id ? "block" : "none";
+                t.tab.classList.toggle("active", index === id);
+            });
+            activeTab = id;
+        }
+
+        function closeTab(id, event) {
+            event.stopPropagation(); // Prevent tab switch on close button click
+
+            if (tabs[id]) {
+                tabs[id].tab.remove();
+                tabs[id].content.remove();
+                tabs.splice(id, 1);
+
+                // Rebuild tab IDs
+                document.getElementById("tabBar").innerHTML = `<button onclick="newTab()">➕ New Tab</button> <button onclick="toggleSettings()">⚙️ Settings</button>`;
+                tabs.forEach((t, index) => {
+                    t.tab.innerHTML = `Tab ${index + 1} <button onclick="closeTab(${index}, event)">X</button>`;
+                    t.tab.onclick = () => switchTab(index);
+                    document.getElementById("tabBar").appendChild(t.tab);
+                });
+
+                // Switch to another tab or show Start Page if no tabs remain
+                if (tabs.length > 0) {
+                    switchTab(Math.max(0, id - 1));
+                } else {
+                    newTab();
+                }
+            }
+        }
+
+        function search(event, tabId) {
+            if (event && event.key !== "Enter") return;
+            let query = document.getElementById(`searchBar${tabId}`).value;
+            if (query) openURL(`https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`, tabId);
+        }
+
+        function openURL(url, tabId) {
+            let iframe = document.createElement("iframe");
+            iframe.src = url;
+
+            // Remove existing content and insert iframe
+            document.getElementById("tabContent").replaceChild(iframe, tabs[tabId].content);
+            tabs[tabId].content = iframe;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function toggleSettings() {
+            let menu = document.getElementById("settingsMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        // Open the first tab on load
+        newTab();
+    </script>
+
 </body>
 </html>
